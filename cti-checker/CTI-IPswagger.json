@@ -1,0 +1,388 @@
+{"definition": {
+  "openapi" : "3.1.0",
+  "servers" : [ {
+    "description" : "CTI Check API",
+    "url" : "http://51.178.36.152:4000"
+  } ],
+  "info" : {
+    "description" : "API to check CTI available info.",
+    "version" : "1.0.0",
+    "title" : "Cyber Threat Intelligence Checker"
+  },
+  "tags" : [ {
+    "name" : "Address Checker",
+    "description" : "Operations to check if an IP is in a black-list"
+  },
+  {
+    "name" : "Credential Checker",
+    "description" : "Operations to check if a username or password has been used by bot in our honeyPot"
+  },
+  {
+    "name" : "Chart Generator",
+    "description" : "Generates a chart that indicates the occurancy of an IP Address or Credential in our ressources - grouped by days/weeks/months"
+  }
+],
+  "paths" : {
+    "/chart/address/{ADDRESS}":{
+      "get": {
+        "produces": "image/png",
+        "description": "Chart generator (days X number of resources that listed the dangerous address) - grouped by days/weeks/mounths",
+        "tags" : [ "Chart Generator" ],
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "ADDRESS",
+          "description" : "pass the IP address to generate a chart (days X number of resources that listed the IP) [hole periode]",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+            }
+          },
+          {
+            "in" : "query",
+            "name" : "GROUPBY",
+            "description" : "pass the type of groupBy for the chart [day, week, month], if empty chart will group by day",
+            "required" : false,
+            "schema" : {
+              "type" : "string",
+              "example":"day"
+              
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the Chart Generated in a PNG file"
+          }
+        }
+      }
+    },
+    "/chartPath/address/{ADDRESS}":{
+      "get": {
+        "produces": "image path",
+        "description": "Chart generator (days X number of resources that listed the dangerous address) - grouped by days/weeks/mounths",
+        "tags" : [ "Chart Generator" ],
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "ADDRESS",
+          "description" : "pass the IP address to generate a chart (days X number of resources that listed the IP) [hole periode]",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+            }
+          },
+          {
+            "in" : "query",
+            "name" : "GROUPBY",
+            "description" : "pass the type of groupBy for the chart [day, week, month], if empty chart will group by day",
+            "required" : false,
+            "schema" : {
+              "type" : "string",
+              "example":"day"
+              
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the Chart Generated in a PNG file"
+          }
+        }
+      }
+    },
+    "/chart/credential/{CREDENTIAL}":{
+      "get": {
+        "produces": "image/png",
+        "description": "Chart generator (days X number of attempts to login using the given credential in our honeyPot) - grouped by days/weeks/months",
+        "tags" : [ "Chart Generator" ],
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "CREDENTIAL",
+          "description" : "pass the credential to generate a chart (days X of attempts to login using the given credential in our honeyPot) [hole periode]",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+            }
+          },
+          {
+            "in" : "query",
+            "name" : "GROUPBY",
+            "description" : "pass the type of groupBy for the chart [day, week, month], if empty chart will group by day",
+            "required" : false,
+            "schema" : {
+              "type" : "string",
+              "example":"day"
+              
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the Chart Generated in a PNG file"
+          }
+        }
+      }
+    },
+    "/address/{ADDRESS}" : {
+      "get" : {
+        "tags" : [ "Address Checker" ],
+        "summary" : "searches database for a matching address",
+        "operationId" : "searchDomain",
+        "description" : "By passing in the appropriate options (address/IP/subnet in path), you can search for\nthe given address in IPv4, Subnet or domain name in our database.\n",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "ADDRESS",
+          "description" : "pass the Domain address to be checked in our database",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "search results matching the same Domain",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/AddressItem"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "bad input parameter"
+          }
+        }
+      }
+    },
+    "/ip/{IP}" : {
+      "get" : {
+        "tags" : [ "Address Checker" ],
+        "summary" : "searches database for a matching IP",
+        "operationId" : "searchIP",
+        "description" : "By passing in the appropriate options (IP in path), you can search for\nthe exact given IP in our database, without taking subnets into account.\n",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "IP",
+          "description" : "pass the IP address to be checked in our database",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "search results matching the same IP",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/AddressItem"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "bad input parameter"
+          }
+        }
+      }
+    },
+    "/subnet/{SUBNET}" : {
+      "get" : {
+        "tags" : [ "Address Checker" ],
+        "summary" : "searches database for a matching SUBNET",
+        "operationId" : "searchSubnet",
+        "description" : "By passing in the appropriate options (SUBNET in path), you can search for\nthe exact given SUBNET in our database.\n",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "SUBNET",
+          "description" : "pass the SUBNET address to be checked in our database",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "search results matching the same SUBNET",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/AddressItem"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "bad input parameter"
+          }
+        }
+      }
+    },
+    "/password/{PASSWORD}" : {
+      "get" : {
+        "tags" : [ "Credential Checker" ],
+        "summary" : "searches database for a matching PASSWORD",
+        "operationId" : "searchPassword",
+        "description" : "By passing in the appropriate options (PASSWORD in path), you can search for\nthe exact given PASSWORD in our database.\n",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "PASSWORD",
+          "description" : "pass the PASSWORD to be checked in our database",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "search results matching the same PASSWORD",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CredentialItem"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "bad input parameter"
+          }
+        }
+      }
+    },
+    "/username/{USERNAME}" : {
+      "get" : {
+        "tags" : [ "Credential Checker" ],
+        "summary" : "searches database for a matching USERNAME",
+        "operationId" : "searchUsername",
+        "description" : "By passing in the appropriate options (USERNAME in path), you can search for\nthe exact given USERNAME in our database.\n",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "USERNAME",
+          "description" : "pass the USERNAME to be ckecked in our database",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "search results matching the same USERNAME",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CredentialItem"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "bad input parameter"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "AddressItem" : {
+        "type" : "object",
+        "required" : [ "id", "address", "source", "type", "updated", "timestamp" ],
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int",
+            "example" : 4
+          },
+          "data":{
+            "type":"string",
+            "example":"24.1.124.227"
+          },
+          "source" : {
+            "type" : "string",
+            "format" : "url",
+            "example" : "https://www.dshield.org/block.txt"
+          },
+          "type" : {
+            "type" : "string",
+            "example" : "IP or SUBNET"
+          },
+          "updated" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2023-10-12 13:15:25"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "timestamp",
+            "example" : "1697119500.098213"
+          }
+        }
+      },
+      "CredentialItem" : {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "updated": {
+            "type": "string",
+            "format": "date"  
+          },
+          "timestamp": {
+            "type": "number",
+            "format": "double"  
+          },
+          "destination_port": {
+            "type": "integer"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "credentials": {
+            "type": "object",
+            "properties": {
+              "source_ip": {
+                "type": "91.92.253.23"
+              },
+              "usernames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "passwords": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }        
+      
+      
+    }
+  }
+},
+"apis": ["./routes/*.js"]
+}

@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mi-cti:
+    image: montimage/cti-api:cti
+    container_name: mi-cti
+    volumes:
+      - datavolume1:/datavolume1
+    ports:
+      - "4000:4000"
+    command: /root/start.sh
+
+  dionaea:
+    image: montimage/cti-api:dionaea
+    container_name: dionaea
+    network_mode: "host"
+    volumes:
+      - datavolume1:/datavolume1
+    entrypoint: ["/root/entrypoint-dionaea.sh"]
+    
+  heralding:
+    image: montimage/cti-api:heralding
+    container_name: heralding
+    network_mode: "host"
+    volumes:
+      - datavolume1:/datavolume1
+    entrypoint: ["/root/entrypoint-heralding.sh"]
+    
+volumes:
+  datavolume1:
+    driver: local
+    driver_opts:
+      type: none
+      device: /datavolume1
+      o: bind
+
